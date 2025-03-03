@@ -2,7 +2,7 @@ package factory
 
 import (
 	"brandsdigger/internal/client"
-	"brandsdigger/internal/client/daddy"
+	"brandsdigger/internal/client/godaddy"
 	"brandsdigger/internal/client/openai"
 	"brandsdigger/internal/config"
 	"github.com/spf13/viper"
@@ -20,7 +20,7 @@ func Init() {
 		viper.GetString(config.OPENAI_API_KEY),
 		viper.GetString(config.OPENAI_MODEL_NAME),
 	)
-	DomainValidator = daddy.New(
+	DomainValidator = godaddy.New(
 		viper.GetString(config.GODADDY_API_KEY),
 		viper.GetString(config.GODADDY_API_SECRET),
 		viper.GetString(config.GODADDY_BASE_URL),

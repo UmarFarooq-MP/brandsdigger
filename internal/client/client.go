@@ -5,5 +5,5 @@ type MessagesGenerator interface {
 }
 
 type DomainValidator interface {
-	ValidateDomain(domain []string) (bool, error)
+	ValidateDomain(domain []string) (map[string]bool, error)
 }
