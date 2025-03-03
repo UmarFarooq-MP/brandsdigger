@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -47,7 +48,8 @@ func (oai OpenAIMessageGen) GenerateNames(message string) ([]string, error) {
 		1. Generate 10 **unique, creative, and brandable** names that fit the startup's vision.
 		2. Ensure each name is **short, easy to pronounce, and memorable**.
 		3. **Check if the .com domain is available** for each name.
-		4. Provide the names in a numbered list format.`, message)
+		4. Provide the names in a numbered list format.
+		5. Please reply with only 10 names no extra words are required just simple 10 domain names.`, message)
 
 	requestBody := ChatRequest{
 		Model: oai.ModelName,
@@ -98,16 +100,22 @@ func (oai OpenAIMessageGen) GenerateNames(message string) ([]string, error) {
 	for _, name := range names {
 		name = strings.TrimSpace(name)
 		if name != "" {
-			cleanNames = append(cleanNames, name)
+			cleanNames = append(cleanNames, cleanDomain(name))
 		}
 	}
 
 	return cleanNames, nil
 }
 
+func cleanDomain(input string) string {
+	// Define a regex to remove leading numbers and dots (e.g., "1. ")
+	re := regexp.MustCompile(`^\d+\.\s*`)
+	return re.ReplaceAllString(input, "")
+}
+
 // New - Creates a new OpenAIMessageGen instance
-func New(apiKey, modelName string) OpenAIMessageGen {
-	return OpenAIMessageGen{
+func New(apiKey, modelName string) *OpenAIMessageGen {
+	return &OpenAIMessageGen{
 		ApiUrl:    "https://api.openai.com/v1/chat/completions",
 		ApiKey:    apiKey,
 		ModelName: modelName,

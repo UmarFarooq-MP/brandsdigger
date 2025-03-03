@@ -7,5 +7,13 @@ import (
 
 func main() {
 	factory.Init()
-	fmt.Println(factory.Generate.GenerateNames("I am a potato Company"))
+	messages, err := factory.Generate.GenerateNames("I am a potato Company")
+	if err != nil {
+		panic(err)
+	}
+	res, err := factory.DomainValidator.ValidateDomain(messages)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(res)
 }
