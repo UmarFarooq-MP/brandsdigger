@@ -41,15 +41,20 @@ type OpenAIMessageGen struct {
 
 // GenerateNames - Generate 10 brand names using OpenAI API
 func (oai OpenAIMessageGen) GenerateNames(message string) ([]string, error) {
-	prompt := fmt.Sprintf(`I have a startup idea, and I need a brand name for it.
-		Here is the idea:
-		%s
-		Your task:
-		1. Generate 10 **unique, creative, and brandable** names that fit the startup's vision.
-		2. Ensure each name is **short, easy to pronounce, and memorable**.
-		3. **Check if the .com domain is available** for each name.
-		4. Provide the names in a numbered list format.
-		5. Please reply with only 10 names no extra words are required just simple 10 domain names.`, message)
+	prompt := fmt.Sprintf(`I have an idea for a **new startup or brand**, and I need a name for it.
+	**Here is the idea:** %s  
+
+	### Your Task:
+		1. Validate the input. If the provided idea is **empty, a greeting, or unrelated to a startup/brand**, respond with:  
+		   **"Invalid input. Please provide a clear startup or brand idea."** and do not proceed further.  
+		2. Generate **10 unique, creative, and brandable** names that align with the given idea.
+		3. Ensure each name is **short, easy to pronounce, and memorable**.
+		4. **Check if the .com domain is available** for each name.
+		5. Present the names in a **simple numbered list** (1-10) with no extra words or explanations.
+
+	**Output format:**  
+		- If the input is valid: return **only** the 10 domain names.  
+		- If the input is invalid: return **"Invalid input. Please provide a clear startup or brand idea."**`, message)
 
 	requestBody := ChatRequest{
 		Model: oai.ModelName,
