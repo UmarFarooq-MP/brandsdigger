@@ -1,7 +1,7 @@
 package http
 
 import (
-	"brandsdigger/internal/domain"
+	"brandsdigger/internal/interface/http/dto"
 	"brandsdigger/internal/service"
 	"encoding/json"
 	"net/http"
@@ -16,7 +16,7 @@ func NewNamesHandler(nameService *service.NamesService) *NamesHandler {
 }
 
 func (h *NamesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var namesRequest domain.Names
+	var namesRequest dto.NamesRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&namesRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
