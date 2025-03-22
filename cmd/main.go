@@ -2,7 +2,7 @@ package main
 
 import (
 	"brandsdigger/internal/factory"
-	"brandsdigger/internal/infrastructure/http"
+	http2 "brandsdigger/internal/interface/http"
 	"brandsdigger/internal/service"
 	"fmt"
 	"log"
@@ -11,8 +11,8 @@ import (
 
 func main() {
 	factory.Init()
-	nameHandler := http.NewNamesHandler(&service.NamesService{})
-	nameRouter := http.NewRouter(nameHandler)
+	nameHandler := http2.NewNamesHandler(&service.NamesService{})
+	nameRouter := http2.NewRouter(nameHandler)
 
 	// Start the HTTP server
 	addr := ":8080"

@@ -12,7 +12,9 @@ type NamesHandler struct {
 }
 
 func NewNamesHandler(nameService *service.NamesService) *NamesHandler {
-	return &NamesHandler{}
+	return &NamesHandler{
+		nameService: nameService,
+	}
 }
 
 func (h *NamesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

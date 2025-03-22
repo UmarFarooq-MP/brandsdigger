@@ -6,25 +6,31 @@ import (
 	"time"
 )
 
-var jwtSecret = []byte("super_secret") // In real apps, inject via config/env
+type Token struct {
+	JwtSecret []byte
+}
 
-func GenerateToken(userID uint) (string, error) {
+func New(secret string) *Token {
+	return &Token{JwtSecret: []byte(secret)}
+}
+
+func (t *Token) GenerateToken(userID string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
-		"exp":     time.Now().Add(15 * time.Minute).Unix(),
+		"exp":     time.Now().Add(48 * time.Hour).Unix(),
 		"iat":     time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtSecret)
+	return token.SignedString(t.JwtSecret)
 }
 
-func ValidateToken(tokenStr string) (jwt.MapClaims, error) {
+func (t *Token) ValidateToken(tokenStr string) (map[string]interface{}, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method")
 		}
-		return jwtSecret, nil
+		return t.JwtSecret, nil
 	})
 
 	if err != nil || !token.Valid {
