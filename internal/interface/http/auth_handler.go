@@ -8,11 +8,11 @@ import (
 )
 
 type AuthHandler struct {
-	nameService *service.NamesService
+	namesService *service.NamesService
 }
 
-func NewAuthHandler(nameService *service.NamesService) *NamesHandler {
-	return &NamesHandler{}
+func NewAuthHandler(nameService *service.NamesService) *AuthHandler {
+	return &AuthHandler{namesService: nameService}
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {

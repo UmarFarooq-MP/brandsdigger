@@ -3,6 +3,7 @@ package main
 import (
 	"brandsdigger/internal/factory"
 	http2 "brandsdigger/internal/interface/http"
+	"brandsdigger/internal/interface/http/middleware"
 	"brandsdigger/internal/service"
 	"fmt"
 	"log"
@@ -11,8 +12,12 @@ import (
 
 func main() {
 	factory.Init()
-	nameHandler := http2.NewNamesHandler(&service.NamesService{})
-	nameRouter := http2.NewRouter(nameHandler)
+	namesService := &service.NamesService{}
+	authHandler := http2.NewAuthHandler(namesService)
+	nameHandler := http2.NewNamesHandler(namesService)
+	publicRouter := http2.PublicRouter(nameHandler)
+	authRouter := http2.AuthRouter(authHandler)
+	authRouter.Use(middleware.JWTMiddleware(factory.Token))
 
 	// Start the HTTP server
 	addr := ":8080"

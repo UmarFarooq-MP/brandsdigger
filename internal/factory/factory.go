@@ -15,7 +15,7 @@ import (
 var (
 	Generate        names.Generator
 	DomainValidator dns.DomainValidator
-	Token           auth.TokenService
+	Token           *auth.TokenService
 )
 
 // Init function to initialize Generate
