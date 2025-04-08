@@ -2,7 +2,7 @@ package main
 
 import (
 	"brandsdigger/internal/factory"
-	http2 "brandsdigger/internal/interface/http"
+	lhttp "brandsdigger/internal/interface/http"
 	"brandsdigger/internal/service"
 	"fmt"
 	"log"
@@ -13,11 +13,11 @@ func main() {
 	factory.Init()
 
 	namesService := &service.NamesService{}
-	authHandler := http2.NewAuthHandler(namesService)
-	nameHandler := http2.NewNamesHandler(namesService)
+	authHandler := lhttp.NewAuthHandler(namesService)
+	nameHandler := lhttp.NewNamesHandler(namesService)
 
 	// Combine public and protected routes
-	router := http2.CreateRouter(authHandler, nameHandler, factory.Token)
+	router := lhttp.CreateRouter(authHandler, nameHandler, factory.Token)
 
 	addr := ":8080"
 	fmt.Printf("🚀 Starting server on %s\n", addr)
