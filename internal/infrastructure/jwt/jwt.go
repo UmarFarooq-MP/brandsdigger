@@ -10,8 +10,8 @@ type Token struct {
 	JwtSecret []byte
 }
 
-func New(secret string) Token {
-	return Token{JwtSecret: []byte(secret)}
+func New(secret string) *Token {
+	return &Token{JwtSecret: []byte(secret)}
 }
 
 func (t *Token) GenerateToken(userID string) (string, error) {
