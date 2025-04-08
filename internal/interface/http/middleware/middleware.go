@@ -5,14 +5,15 @@ import (
 	"net/http"
 	"strings"
 
-	"brandsdigger/internal/infrastructure/jwt" // Adjust this import to match your project structure
+	"brandsdigger/internal/domain/auth" // Use the interface, not the concrete implementation
 )
 
 type contextKey string
 
 const ClaimsContextKey = contextKey("claims")
 
-func JWTMiddleware(tokenService *jwt.Token) func(http.Handler) http.Handler {
+// JWTMiddleware returns a middleware that validates JWT tokens using the provided TokenService
+func JWTMiddleware(tokenService auth.TokenService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authHeader := r.Header.Get("Authorization")
