@@ -40,76 +40,109 @@ type OpenAIMessageGen struct {
 }
 
 // GenerateNames - Generate 10 brand names using OpenAI API
-func (oai OpenAIMessageGen) GenerateNames(message string) ([]string, error) {
-	prompt := fmt.Sprintf(`I have an idea for a **new startup or brand**, and I need a name for it.
-	**Here is the idea:** %s  
+func (oai OpenAIMessageGen) GenerateNames(idea string) ([]string, error) {
 
-	### Your Task:
-		1. Validate the input. If the provided idea is **empty, a greeting, or unrelated to a startup/brand**, respond with:  
-		   **"Invalid input. Please provide a clear startup or brand idea."** and do not proceed further.  
-		2. Generate **10 unique, creative, and brandable** names that align with the given idea.
-		3. Ensure each name is **short, easy to pronounce, and memorable**.
-		4. **Check if the .com domain is available** for each name.
-		5. Present the names in a **simple numbered list** (1-10) with no extra words or explanations.
+	// STEP 1 — Simple sanity validation before calling OpenAI
+	if strings.TrimSpace(idea) == "" {
+		return nil, fmt.Errorf("invalid input: empty brand idea")
+	}
 
-	**Output format:**  
-		- If the input is valid: return **only** the 10 domain names.  
-		- If the input is invalid: return **"Invalid input. Please provide a clear startup or brand idea."**`, message)
+	// STEP 2 — A clean, JSON-safe request prompt
+	prompt := fmt.Sprintf(`
+I have an idea for a startup or brand:
+
+"%s"
+
+### Your Rules:
+1. First evaluate the idea.
+2. If it is NOT a startup/business idea (empty, greeting, or unclear),
+   respond EXACTLY with:
+   { "error": "invalid_input" }
+
+3. If it IS valid:
+   - Generate 10 SHORT, BRANDABLE .com domain names.
+   - NO sentences. NO explanation. NO description.
+   - Only domain names (like "FlowZen.com").
+   - Output ONLY JSON in this format:
+
+{
+  "names": ["name1.com", "name2.com", ...]
+}
+`, idea)
 
 	requestBody := ChatRequest{
 		Model: oai.ModelName,
 		Messages: []Message{
-			{Role: "system", Content: "You are a creative AI that generates brand names with available domains."},
+			{Role: "system", Content: "You generate ONLY JSON and follow instructions strictly."},
 			{Role: "user", Content: prompt},
 		},
 	}
 
+	// STEP 3 — Marshal request
 	jsonData, err := json.Marshal(requestBody)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
+		return nil, fmt.Errorf("marshal request failed: %w", err)
 	}
 
+	// STEP 4 — Build HTTP request
 	req, err := http.NewRequest("POST", oai.ApiUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+oai.ApiKey)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %w", err)
+		return nil, fmt.Errorf("failed to call OpenAI: %w", err)
 	}
 	defer resp.Body.Close()
 
+	// STEP 5 — Must be HTTP 200
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("API returned error: %s, Response: %s", resp.Status, string(body))
+		return nil, fmt.Errorf("openai error: %s → %s", resp.Status, string(body))
 	}
 
+	// STEP 6 — Decode OpenAI response
 	var chatResp ChatResponse
-	err = json.NewDecoder(resp.Body).Decode(&chatResp)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode response JSON: %w", err)
+	if err := json.NewDecoder(resp.Body).Decode(&chatResp); err != nil {
+		return nil, fmt.Errorf("failed decoding response JSON: %w", err)
 	}
 
 	if len(chatResp.Choices) == 0 {
-		return nil, fmt.Errorf("no brand names returned")
+		return nil, fmt.Errorf("no response from openai")
 	}
 
-	// Extract brand names from response
-	names := strings.Split(chatResp.Choices[0].Message.Content, "\n")
-	var cleanNames []string
-	for _, name := range names {
-		name = strings.TrimSpace(name)
-		if name != "" {
-			cleanNames = append(cleanNames, cleanDomain(name))
-		}
+	content := chatResp.Choices[0].Message.Content
+
+	// STEP 7 — Detect invalid_input JSON
+	if strings.Contains(content, `"error":`) && strings.Contains(content, `invalid_input`) {
+		return nil, fmt.Errorf("invalid brand idea")
 	}
 
-	return cleanNames, nil
+	// STEP 8 — Extract JSON safely
+	type nameResponse struct {
+		Names []string `json:"names"`
+	}
+
+	var nr nameResponse
+	if err := json.Unmarshal([]byte(content), &nr); err != nil {
+		return nil, fmt.Errorf("failed to parse OpenAI JSON: %w\nRaw: %s", err, content)
+	}
+
+	if len(nr.Names) == 0 {
+		return nil, fmt.Errorf("no names returned")
+	}
+
+	// STEP 9 — Final cleanup (remove weird whitespace)
+	var cleaned []string
+	for _, name := range nr.Names {
+		cleaned = append(cleaned, strings.TrimSpace(name))
+	}
+
+	return cleaned, nil
 }
 
 func cleanDomain(input string) string {

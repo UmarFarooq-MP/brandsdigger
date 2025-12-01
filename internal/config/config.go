@@ -1,13 +1,16 @@
 package config
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/spf13/viper"
 )
 
 const (
 	GODADDY_API_KEY    = "godaddy.api.key"
 	GODADDY_API_SECRET = "godaddy.api.secret"
-	GODADDY_BASE_URL   = "godaddy.api.url"
+	GODADDY_BASE_URL   = "godaddy.base.url"
 
 	DEEPSEEK_API_KEY    = "deepseek.api.key"
 	DEEPSEEK_BASE_URL   = "deepseek.api.url"
@@ -18,9 +21,10 @@ const (
 )
 
 func Init() {
-	_ = viper.BindEnv(GODADDY_API_KEY, "API_KEY")
-	_ = viper.BindEnv(GODADDY_API_SECRET, "API_SECRET")
-	_ = viper.BindEnv(GODADDY_BASE_URL, "BASE_URL")
+	fmt.Println("RAW OS ENV:", os.Getenv("API_KEY"), os.Getenv("API_SECRET"), os.Getenv("BASE_URL"))
+	_ = viper.BindEnv(GODADDY_API_KEY, "GODADDY_API_KEY")
+	_ = viper.BindEnv(GODADDY_API_SECRET, "GODADDY_API_SECRET")
+	_ = viper.BindEnv(GODADDY_BASE_URL, "GODADDY_BASE_URL")
 
 	_ = viper.BindEnv(DEEPSEEK_API_KEY, "DEEPSEEK_API_KEY")
 	_ = viper.BindEnv(DEEPSEEK_BASE_URL, "DEEPSEEK_BASE_URL")
@@ -33,6 +37,6 @@ func Init() {
 	viper.SetDefault(DEEPSEEK_BASE_URL, "https://api.deepseek.com/v1/chat/completions")
 
 	viper.SetDefault(OPENAI_MODEL_NAME, "gpt-3.5-turbo")
-	viper.SetDefault(GODADDY_BASE_URL, "https://api.ote-godaddy.com/")
+	viper.SetDefault(GODADDY_BASE_URL, "https://api.ote-godaddy.com")
 
 }

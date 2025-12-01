@@ -20,8 +20,9 @@ func main() {
 	router := lhttp.CreateRouter(authHandler, nameHandler, factory.Token)
 
 	addr := ":8080"
-	fmt.Printf("🚀 Starting server on %s\n", addr)
+	fmt.Printf("Starting server on %s\n", addr)
 	if err := httpNet.ListenAndServe(addr, router); err != nil {
-		log.Fatalf("❌ Error starting server: %v", err)
+		log.Fatalf("Error starting server: %v", err)
 	}
+
 }

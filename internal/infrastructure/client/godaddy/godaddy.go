@@ -65,6 +65,7 @@ func (gd DomainValidator) ValidateDomain(domains []string) (map[string]bool, err
 		return nil, err
 	}
 
+	//TODO:: 203 is 200 for dev change it to 200 when on prod
 	if resp.StatusCode != 200 {
 		return nil, errors.New(resp.Status)
 	}

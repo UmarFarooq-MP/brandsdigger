@@ -11,6 +11,7 @@ type SignUp struct {
 	FirstName string `json:"firstname"`
 	LastName  string `json:"lastname"`
 	Age       int    `json:"age"`
+	Login
 }
 
 type Auth interface {
